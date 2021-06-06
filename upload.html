@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<script type="text/javascript" src="https://js.live.net/v7.2/OneDrive.js"></script>
+<script type="text/javascript" src="./codejar.js"></script>
+<script type="text/javascript" src="./htmlencode.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script src="./clipboard.min.js"></script> <!--https://clipboardjs.com-->
+<script src="./onedrive.js"></script>
+<head> 
+    <title>get-my.link Cloud Storage Link Creator</title>
+<!--    <script data-ad-client="ca-pub-6963897108350042" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/grids-responsive-min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body onload="pageload()">
+<div style="height:9999px; background: #1f8dd6;">
+    <div class="splash-top"></div>
+    <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-1-4"></div>
+        <div class="pure-u-1 pure-u-md-1-2">
+            <h1 class="splash-head">get-my.link</h1>
+            <p class="splash-subhead">
+                Create customized links to your files in the cloud
+            </p>
+            <br><BR>
+            <form id="preset" class="pure-form pure-form-stacked">
+                <legend style="color:white; opacity: 0.9;">Customize your link</legend>
+                <div style="text-align: left;">
+					<table><tr>
+						<td>
+							<button id="preset0" class="button-success pure-button" onclick="switch_preset(0)">Preset 1</button>
+							<button id="preset1" class="button-error pure-button" onclick="switch_preset(1)">Preset 2</button>
+							<button id="preset2" class="button-warning pure-button" onclick="switch_preset(2)">Preset 3</button>
+						</td>
+						<td style="text-align: right;">
+							<button class="button-secondary pure-button" onclick="reset_preset()">Reset</button>
+						</td>    
+					</tr></table>
+                </div>
+                <input type="text" id="presetName" value="Paste to GMail with thumbnail"/>
+				<div class="editor"></div>
+                <span class="pure-form-message">
+                    <u>Available values:</u>   
+                                        folder.url.private,
+                                        folder.path,
+                                        file.url.private,
+                                        file.url.public.read,
+                                        file.name,
+                                        thumbnail.l.public,
+                                        thumbnail.m.public,
+                                        thumbnail.s.public
+
+                </span>
+				<br><BR>
+				<legend style="color:white; opacity: 0.9;" id="message">Upload a file or open existing from OneDrive</legend>
+				<div class="pure-g">
+					<div class="pure-u-1 pure-u-md-11-24" >
+						<input id="fileUploadControl" name="fileUploadControl" type="file" multiple="true"  />
+						<div id="dropContainer" class="dropContainer" 
+							onclick="fclick(event);"
+							ondragenter="fdragenter(event);"
+							ondragover="fdragover(event);"
+							ondragleave="fdragleave(event);"
+							ondrop="fdrop(event);">
+							<span class="pure-form-message">Drop your file here or click to upload.</span>
+						</div>
+						<input id="uploadfilename" type="text" placeholder="rename file after drop"/>
+						<button class="pure-button pure-button-primary" onclick="launchSaveToOneDrive();">OneDrive Save</button>
+					</div>
+					<div class="pure-u-1 pure-u-md-2-24"></div>
+					<div class="pure-u-1 pure-u-md-11-24">
+						<div id="openfromodrv">
+							<span class="pure-form-message">Select one or more files or folders already in your OneDrive.</span>
+						</div>
+						<button class="pure-button pure-button-primary" onClick="launchOneDrivePicker();">OneDrive Open</button>
+					</div>
+				</div>
+				<br><BR>
+			
+                <legend style="color:white; opacity: 0.9;" id="message">click "Save" or "Open" then "Copy Result"</legend>
+				<table id="warning" style="display: none;">
+                    <tr>
+                        <td style="vertical-align: top; padding: 2px;"><IMG class="warning" src="warning_xs.png"></td>
+                        <td style="vertical-align: top;text-align: left;padding: 2px;">
+                            <span class="pure-form-message" style="color: rgb(202, 202, 60);">Anyone who gets the <B>file.url.public.read</B> link can view your file! Thumbnails are also accessible to everyone who has the link!</span>
+                        </td>
+                    </tr>
+				</table>
+                <p id="result"></p>
+            </form>
+			<div id="copyresult" style="display: none;">
+				<button id="copyresult" class="pure-button pure-button-primary btn" data-clipboard-action="copy" data-clipboard-target="#clipboardDiv" >Copy Result</button>
+			</div>
+        </div>
+        <div class="pure-u-1 pure-u-md-1-4"></div>
+    </div>
+</div>
+    <div id="clipboardDiv" style="all: initial; background: initial; font-size: 12pt; border: 0; padding: 0; margin: 0; position: fixed; right: -9999px; top: 9999px; opacity: 0; pointer-events: none; z-index: -1;" readonly tabindex="0">
+        No link on the clipboard. Need to select a file first using the "Open OneDrive" button!
+    </div>
+
+</body>
+<script type="text/javascript">
+/*	if (location.protocol !== 'https:') {
+		location.replace(`https:${location.href.substring(location.protocol.length)}`);
+	}*/
+    $('form#preset').submit(false);
+
+	
+	//initiate presets
+    var active_preset;
+    const default_presets = {
+        value: [
+            { 
+                title: "HTML: thumbnail and filename with public read-only link",
+                preset: "<IMG src='thumbnail.M.public'><BR><A href='file.url.public.read' target='_blank'>file.name</A>"
+            },
+            { 
+                title: "Markdown 1: private link with full path info",
+                preset: "[folder.path](folder.url.private)/[file.name](file.url.private)"
+            },
+            { 
+                title: "Markdown 2: large thumbnail with private link including path",
+                preset: "![folder.path/file.name](thumbnail.L.public) [file.name](file.url.private)"
+            }
+        ]
+    };
+    var presets = {
+        value: [
+            { 
+                title: default_presets.value[0].title,
+                preset: default_presets.value[0].preset
+            },
+            { 
+                title: default_presets.value[1].title,
+                preset: default_presets.value[1].preset
+            },
+            { 
+                title: default_presets.value[2].title,
+                preset: default_presets.value[2].preset
+            }
+        ]
+    };
+
+	
+	//Initiate codejar
+	const highlight = editor => {
+		var code = htmlEncode(editor.textContent);
+		code = code.replace(/folder.url.private/gi, '<span class="code">folder.url.private</span>');
+		code = code.replace(/folder.path/gi, '<span class="code">folder.path</span>');
+		code = code.replace(/file.url.private/gi, '<span class="code">file.url.private</span>');
+		code = code.replace(/file.url.public.read/gi, '<span class="code">file.url.public.read</span>');
+		code = code.replace(/file.name/gi, '<span class="code">file.name</span>');
+		code = code.replace(/thumbnail.l.public/gi, '<span class="code">thumbnail.l.public</span>');
+		code = code.replace(/thumbnail.m.public/gi, '<span class="code">thumbnail.m.public</span>');
+		code = code.replace(/thumbnail.s.public/gi, '<span class="code">thumbnail.s.public</span>');
+		editor.innerHTML = code;
+	}
+	let jar = CodeJar(document.querySelector('.editor'), highlight); 
+
+
+	//Print resulting links at the bottom of the page
+	function edit_result(value, itemdata,embeddata,l,thumbdata){
+		$('legend#message').html('Here are your links');
+        folder_url_private  = encodeURI('https://onedrive.live.com/?id='+ itemdata.parentReference.id);
+        folder_path         = decodeURI(itemdata.parentReference.path);
+        if (typeof itemdata.image === 'undefined') 
+            file_url_private= encodeURI('https://onedrive.live.com/embed?resid='+value.id+'&em=2');      
+        else 
+            file_url_private= itemdata.webUrl;
+        file_name           = itemdata.name;
+        if (embeddata != '') 
+            file_url_public = embeddata.link.webUrl;
+        else 
+            file_url_public = '';
+        if (thumbdata != '') {
+            if (thumbdata.value.length>0) {
+                thumbnail_large       = thumbdata.value[0].large.url;
+                thumbnail_medium      = thumbdata.value[0].medium.url;
+                thumbnail_small       = thumbdata.value[0].small.url;
+            } else {
+                thumbnail_large       = '';
+                thumbnail_medium      = '';
+                thumbnail_small       = '';
+            }
+        } else {
+            thumbnail_large       = '';
+            thumbnail_medium      = '';
+            thumbnail_small       = '';
+        }
+
+       
+        l = l.replace(/folder.url.private/gi, folder_url_private);
+        l = l.replace(/folder.path/gi, folder_path);       
+        l = l.replace(/file.url.private/gi, file_url_private);
+        l = l.replace(/file.url.public.read/gi, file_url_public);
+        l = l.replace(/file.name/gi, file_name);
+        l = l.replace(/thumbnail.l.public/gi,thumbnail_large);
+        l = l.replace(/thumbnail.m.public/gi,thumbnail_medium);
+        l = l.replace(/thumbnail.s.public/gi,thumbnail_small);
+
+        if (l.indexOf('<') != -1) $('p#result').append(l);     
+        $('p#result').append('<BR><textarea rows=5 class="pure-input-1-1" style="font-size: 75%;">'+l+'</textarea><BR>');
+        $('div#clipboardDiv').append(l + '<br>');
+		$('div#copyresult').css('display','block');
+    }
+
+
+	//Manage cookies
+    function saveToCookie() {
+        var expiration = new Date();
+        expiration.setTime(expiration.getTime() + 3600 * 1000);
+        var data = JSON.stringify(presets);
+        var cookie = "onedrivelink=" + data +"; path=/; expires=" + expiration.toUTCString();
+
+        if (document.location.protocol.toLowerCase() == "https") {
+            cookie = cookie + ";secure";
+        }
+        document.cookie = cookie;
+			
+    }
+
+    function loadFromCookie(name) {
+        var cookies = document.cookie;
+        var start = cookies.indexOf(name);
+        if (start >= 0) {
+            start += name.length;
+            var end = cookies.indexOf(';', start);
+            if (end < 0) {
+                end = cookies.length;
+            }
+            else {
+                postCookie = cookies.substring(end);
+            }
+
+            var value = cookies.substring(start, end);
+            return JSON.parse(value);
+        }
+        return "";
+    }
+	
+	
+	//Manage presets
+	const blchar = 10; // number of chararcters to use for button name
+		
+    function saveCurrentEditToPreset() {
+        presets.value[active_preset].title = $('input#presetName').val();
+        presets.value[active_preset].preset = getEditorVal() //jar.toString(); //$('textarea#linkformat').val();
+		$('button#preset'+active_preset).html(presets.value[active_preset].title.substring(0,blchar)+'...');
+    }
+
+    function switch_preset(i) {
+        saveCurrentEditToPreset();
+        saveToCookie();
+        $('input#presetName').val(presets.value[i].title);
+        setEditorVal(presets.value[i].preset);
+        active_preset = i;      
+    }
+   
+    function reset_preset() {
+        presets.value[active_preset].title = default_presets.value[active_preset].title;
+        presets.value[active_preset].preset = default_presets.value[active_preset].preset;
+        $('input#presetName').val(presets.value[active_preset].title);
+		setEditorVal(presets.value[active_preset].preset);
+		$('button#preset'+active_preset).html(presets.value[active_preset].title.substring(0,blchar)+'...');		
+    }
+
+
+	//Support functions to manage CliboardJS
+    var clipboard = new ClipboardJS('.btn');
+    clipboard.on('success', function(e) {
+        console.log(e);
+    });
+
+    clipboard.on('error', function(e) {
+        console.log(e);
+    });
+
+
+	//Support functions to read and write the preset editor
+	function getEditorVal() {
+		return jar.toString();
+	}
+	
+	function setEditorVal(value) {
+		jar.updateCode(value);
+	}
+
+
+
+	//Initiate page. Load presets from cookie
+    function pageload(){
+        active_preset = 0;
+        obj = loadFromCookie('onedrivelink=');
+        if (obj!='') {
+            if (typeof obj.value !== 'undefined') {
+                for (i=0;i<3;i++) {
+                    presets.value[i].title = obj.value[i].title;
+                    presets.value[i].preset = obj.value[i].preset;
+					$('button#preset'+i).html(presets.value[i].title.substring(0,blchar)+'...');
+                }
+            }
+        }
+		else 
+			for (i=0;i<3;i++) $('button#preset'+i).html(presets.value[i].title.substring(0,blchar)+'...');
+		
+        $('input#presetName').val(presets.value[0].title);
+		setEditorVal(presets.value[0].preset);
+		
+    }
+
+	//drag event handlers
+	function fdragenter(event) {
+		var dt = event.dataTransfer;
+		console.log(dt.items);
+		if (dt.items.length == 1) {
+			if (dt.items[0].kind == 'file' && dt.items[0].type != '') //prevent copying folders
+				$('div#dropContainer').addClass('dropHighlight'); 
+		}
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
+	function fdragover(event) {
+		var dt = event.dataTransfer;
+		if (dt.items.length == 1)
+			if (dt.items[0].kind == 'file' && dt.items[0].type != '') { //prevent copying folders
+				$('div#dropContainer').addClass('dropHighlight'); 
+				event.dataTransfer.dropEffect = 'copy';
+			} else event.dataTransfer.dropEffect = 'none';
+		else event.dataTransfer.dropEffect = 'none';
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
+	function fdragleave(event) {
+		var dt = event.dataTransfer;
+		if (dt.items.length == 1) 
+			if (dt.items[0].kind == 'file' && dt.items[0].type != '') //prevent copying folders
+				$('div#dropContainer').removeClass('dropHighlight'); 
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
+	function fdrop(event) {
+		var dt = event.dataTransfer;
+		if (dt.items.length == 1) 
+			if (dt.items[0].kind == 'file' && dt.items[0].type != '') { //prevent copying folders
+				$('div#dropContainer').removeClass('dropHighlight'); 
+				document.getElementById('fileUploadControl').files = event.dataTransfer.files;
+				$('input#uploadfilename').val(event.dataTransfer.files[0].name);
+			}
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
+	function fclick(event) {
+		$('input#fileUploadControl').trigger('click');
+	}
+	
+</script>
+</html>
+
