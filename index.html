@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+<script type="text/javascript" src="https://js.live.net/v7.2/OneDrive.js"></script>
+<script type="text/javascript" src="./codejar.js"></script>
+<script type="text/javascript" src="./htmlencode.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script src="./clipboard.min.js"></script> 
+<script src="./onedrive.js"></script>
+<head> 
+    <title>get-my.link Cloud Storage Link Creator</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/grids-responsive-min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+    <link rel="stylesheet" href="./styles.css">
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-93926391-3"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'UA-93926391-3');
+	</script>
+	<meta name="google-site-verification" content="56gSa4wePmoLghlhf-VTbc4kNqcW_55SjtTH4POPztY" />
+</head>
+<body onload="pageload()">
+<div style="height:9999px; background: #1f8dd6;">
+    <div class="splash-top"></div>
+    <div class="pure-g">
+        <div class="pure-u-1 pure-u-md-1-4">
+		</div>
+        <div class="pure-u-1 pure-u-md-1-2">
+            <h1 class="splash-head">
+				<table style="width: auto;margin-left: auto;margin-right:auto;"><tr>
+				<td><IMG id="siteiconinheader" SRC="get-my.link200.png"></td>
+				<td style="vertical-align:middle">get-my.link</td>
+				</tr></table>
+			</h1>
+			
+            <p class="splash-subhead">
+                Create customized links to your files in the cloud
+            </p>
+			<div class="spacer">&nbsp</div>
+            <form id="preset" class="pure-form pure-form-stacked">
+				<legend style="color:white; "><span class="stephighlight">1.</span> Select files</legend>
+				<span class="pure-form-message">
+					Select one or more files or folders already in your OneDrive. <BR>
+					You can also upload files using the file picker after clicking the "OneDrive" below.
+				</span>
+				<div id="dropContainer" class="dropContainer" 
+					ondragenter="fdragenter(event);"
+					ondragover="fdragover(event);"
+					ondragleave="fdragleave(event);"
+					ondrop="fdrop(event);">
+					<span class="pure-form-message">You can also drop an image from the web here. <br>(MS Edge browser not supported)</span>
+				</div>
+				<input id="uploadfilename" type="text" placeholder="rename image after drop"/>					
+				<button class="pure-button pure-button-primary" onClick="launchOneDrive();">
+					<table style="width: auto;margin-left: auto;margin-right:auto;"><tr>
+						<td style="vertical-align:middle"><img id="buttonicon" src="./OneDrive.png"></td>
+						<td style="vertical-align:middle">&nbsp OneDrive</td>
+					</tr></table>		
+				</button>
+				<span id="AndroidMessage" class="pure-form-message" style="display: none;"><A href="#knownissues">Having issues with OneDrive?</A></span>
+
+				<div class="spacer">&nbsp</div>
+                <legend style="color:white; opacity: 0.9;"><span class="stephighlight">2.</span> Customize your link</legend>
+				<span class="pure-form-message" style="text-align: left">
+					Click link to load presets:
+					<u onclick="defaultPreset();" onmouseover="this.style.cursor='pointer'" title="Presets that showcase a variaty different type of links you can create with Get-My.link">Default showcase</u>,
+					<u onclick="roamPreset();" onmouseover="this.style.cursor='pointer'" title="Presets tailored for use in Roam (roamresearch.com)">Roam</u>
+				</span>
+				<button id="preset0" class="button-success pure-button" onclick="switch_preset(0)">Preset 1</button>
+				<button id="preset1" class="button-error pure-button" onclick="switch_preset(1)">Preset 2</button>
+				<button id="preset2" class="button-warning pure-button" onclick="switch_preset(2)">Preset 3</button>
+				<button id="preset3" class="button-secondary pure-button" onclick="switch_preset(3)">Preset 4</button>
+				<table><tr>
+					<td style="width: 100%;">
+						<input type="text" id="presetName" value="Paste to GMail with thumbnail"/>
+					</td>
+					<td style="text-align: right;vertical-align: middle;">
+						<button class="button-reset pure-button" onclick="reset_preset()">Reset</button>
+					</td>    
+				</tr></table>					
+				<div class="editor"></div>
+                <span class="pure-form-message">
+                    <span title="Use these keywords in the editor above. Recognized keywords will turn red in the editor"><u>Available fields:</u></span>
+                                        <span title="A link to the folder that only you can access">folder.url.private,</span>
+                                        <span title="The full folder path where the selected file is stored.">folder.path,</span>
+                                        <span title="A link to the file in embed moved that only you can access. This is the link you could use in an iFrame for example.">file.url.private.embed,</span>
+										<span title="A link to the file that only you can access, which opens the file for editing either in the browser or the native app on your iOS or Android device">file.url.private.edit,</span>
+                                        <span title="Anyone that gets in possession of this link will be able to read the file. This is an embeddable link for filetypes that support it.">file.url.public.read,</span>
+                                        <span title="The name of the file.">file.name,</span>
+                                        <span title="A large sized thumbnail picture of the file. Not all filetypes have a thumbnail e.g. pictures, Word, PowerPoint has, but Excel does not. The thumbnail picture is a public link, anyone in possession of the link can view the thumbnail.">thumbnail.l.public,</span>
+                                        <span title="A medium sized thumbnail picture of the file. Not all filetypes have a thumbnail e.g. pictures, Word, PowerPoint has, but Excel does not. The thumbnail picture is a public link, anyone in possession of the link can view the thumbnail.">thumbnail.m.public,</span>
+                                        <span title="A small sized thumbnail picture of the file. Not all filetypes have a thumbnail e.g. pictures, Word, PowerPoint has, but Excel does not. The thumbnail picture is a public link, anyone in possession of the link can view the thumbnail.">thumbnail.s.public</span><BR>
+										HTML line breaks &lt;BR&gt; convert into new line characters when copying to clipboard. Use &lt;BR&gt; to force new line in Markdown links.
+
+                </span>
+				<div class="spacer">&nbsp</div>
+				<A name="res" id="res">
+					<legend style="color:white;" id="message"><span class="stephighlight">3.</span> Wait for links, then copy/paste</legend>
+				</A>
+				<div id="createlinkbutton" style="display: none;">
+					<button id="createLinks" class="pure-button pure-button-primary btn" onclick="updateLinks();" >
+						<table style="width: auto;margin-left: auto;margin-right:auto;"><tr>
+							<td style="vertical-align:middle"><img id="buttonicon" src="./refresh.png"></td>
+							<td style="vertical-align:middle">&nbspUpdate links</td>
+						</tr></table>
+					</button>
+				</div>
+				<table id="warning" style="display: none;">
+                    <tr>
+                        <td style="vertical-align: top; padding: 2px;"><IMG class="warning" src="warning_xs.png"></td>
+                        <td style="vertical-align: top;text-align: left;padding: 2px;">
+                            <span class="pure-form-message" style="color: rgb(202, 202, 60);">Anyone who receives the <B>file.url.public.read</B> link or visits the site or blog with this embedded file will be able to view your file (but not edit it) without signing in! Thumbnails are also accessible to everyone who receives the thumbnail link!</span>
+                        </td>
+                    </tr>
+				</table>
+                <p id="result"></p>
+				<div id="copyresult" style="display: none;">
+					<button id="copyresult" class="pure-button pure-button-primary btn" data-clipboard-action="copy" data-clipboard-target="#clipboardDiv" >Copy Result</button>
+				</div>
+
+				<div class="spacer">&nbsp</div>
+				<div class="spacer">&nbsp</div>
+				<legend class="about">What does Get-My.link do?</legend>
+				<span class="abouttext pure-form-message">
+					<p>
+						Get-My.link generates highly customizable pre-formatted links to your files and folders on OneDrive.
+					</p>
+				</span>
+				
+				<div class="spacer">&nbsp</div>
+				<legend class="about">Why should I use Get-My.link?</legend>
+				<span class="abouttext pure-form-message" >
+					<p>
+						OneDrive offers limited out of the box capabilities to create links.  Often it takes many clicks and manual editing to embed these links in your notes, blog, etc. 
+					</p>
+					<p>
+						The primary reason I have created and use Get-My.link is to embed documents in my notes such that I have a thumbnail image of the document and a private link with the full file-path and filename, so that I can open the document or the containing folder for editing regardless of the device I have in hand and without having to download and re-upload the file into my notes.
+					</p>
+					<p> 
+						Some people may say I am paranoid. I consider myself pragmatic but careful. I prefer the convenience of storing information in the cloud, but I am reassured by having a synchronized copy of my files on my PC. Without Get-My.link I simply could not find a way to include the full file-path information for my documents when creating links. Should I need to resort to finding the documents in my offline archive I would need the file path information to efficiently navigate my data. Also I am cautious about the security of the various note taking services I use. Storing my files in a more industrial grade solution like OneDrive mitigates some of the risks associated with the uncertain security of the note taking tools I have chosen to use. 
+					</p>
+					<p>
+						With Get-My.link you can create up to 4 different customized link templates that are saved in your browser cookies for quick access whenever you need them. 
+					</p>
+					<p>
+						Here are some examples of how you could use Get-My.link: 
+					</p>
+					
+					<B>Note taking: </B> 
+					<ul>
+						<li>							
+							Apps like 
+							<A href="https://obsidian.md">Obsidian.md</A>, 
+							<A href="https://roamresearch">Roam</A>, 
+							<A href="https://tiddlywiki.com">TiddlyWiki</A>, 
+							<A href="https://thebrain.com">TheBrain</A>, 
+							<A href="https://www.onenote.com">OneNote</A>, 
+							<A href="https://apps.apple.com/us/app/ia-writer/id775737172?ign-mpt=uo%3D4">iA Writer</A>, 
+							<A href="https://apps.apple.com/us/app/1writer-markdown-text-editor/id680469088?ign-mpt=uo%3D4">1Writer</A>, 
+							<A href="https://apps.apple.com/us/app/byword/id482063361?ign-mpt=uo%3D4"> Byword</A>,  
+							<A href="https://apps.apple.com/us/app/editorial/id673907758?ign-mpt=uo%3D4"> Editorial</A>, 
+							<A href="https://play.google.com/store/apps/details?id=com.journey.app"> Journey</A>, 
+							<A href="https://play.google.com/store/apps/details?id=com.jotterpad.x"> JotterPad</A>, 
+							<A href="https://play.google.com/store/apps/details?id=net.gsantner.markor"> Markor</A>, etc. 
+							allow you to add links to web resources, but often lack the feature to add attachments or offer this feature for a premium subscription. Even if attachments are allowed, these files are often stored/referenced on your local device or uploaded/synchronized to their own cloud. In either case this will limit your ability to edit the attached files, especially if you are regularly accessing your notes from multiple devices. With Get-My.link you can <b>easily insert a link in your notes to the editable document on OneDrive</b>. By also including a thumbnail image you can make your notes more visually appealing. 
+						</li>
+						<li>
+							In my notes I often want to reference a picture that I saw on the web. Sure, you can insert a link to the picture where you found it, but you run the risk of the webpage changing, the image getting deleted from the source, etc. Get-My.link offers a quick and convenient way to <b>save images from websites to OneDrive, such that you can rename the image before it is saved.</b> In addition, the link to the image on OneDrive is automatically generated, so you can immediately include it in your notes.
+						</li>
+						<li>
+							I prefer keeping my documents, pictures, etc. organized following my established filing logic. I want to avoid creating an additional copy of the file just for inclusion in my notes, such as the case with apps that offer the option to upload documents into your notes. Having some files attached to notes and others in my filing system leads to a mess. With Get-My.link you can solve this problem. <b>Your files stay in your folders, and you can insert a link in your notes. You can even include the full file path</b>, so that you can integrate your document filing with your notes even more.
+						</li>
+						<li>Finally, here are some app specific thoughts
+							<ul>
+								<li>
+									<B>TiddlyWiki</B>: TiddlyWiki's speed and scalability is highly impacted by file size. Images and other attachments in your Tiddlers get stored in the tidlywiki.html files. Even if you use a version like <A href="https://tiddlywiki.com/#Installing%20TiddlyWiki%20on%20Node.js">TiddlyWiki on Node.js</A> which stores individual tiddlers in separate files, all the files get loaded in memory when you access the Wiki. Using links to documents and pictures with a thumbnail, or in an iFrame will result in much smaller TiddlyWiki file size. You can also define your own macros in TiddlyWiki to format your picture/document and customize Get-My.link to generate a link matching the macro format.
+								</li>
+								<li>
+									<B>TheBrain</B>: The free version of TheBrain provides unlimited thoughts, synchronization between devices, notes and link attachments. File attachments are only available in the paid version. With Get-My.link you can attach links to files. Even with the paid version, attaching links to documents instead of the files themselves has the benefit, that these attachments can be edited even via <A href="https://app.thebrain.com">Web Brain</A> and the <A href="https://apps.apple.com/us/app/thebrain-tech/id835873357">iOS</A> and <A href="https://play.google.com/store/apps/details?id=com.thebrain.android&hl=en">Android</A> Brain apps. Also Get-My.link can generate thumbnails and links you can include in your thought notes where you can provide additional context, instead of keeping these links on separate tabs attached to the thought.
+								</li>
+								<li>
+									<B>Roam</B>: Roam is a new note taking app for networked thought. You can freely upload files and attach images to your notes, which is great! Uploaded files get stored on Google's Firebase Cloud Storage and are referenced in your note with a public read link (try copying one of the links from Roam and opening it in a private / incognito browser window. The file will download without issues). If you prefer a bit more safety but would still like to enjoy the many benefits of Roam, with Get-My.link you can create thumbnails and private links to your files and folders that you can include in your notes on Roam with only a few clicks. Yes, it is a bit more clicking then uploading to Roam, but far less then uploading to OneDrive and playing around with sharing options to get a link you can insert and format. 
+								</li>
+								<li>
+									<B>Obsidian</B>: Like Roam Obsidian treats images and PDFs natively, but does not support other type of attachments such as documents, presentations, etc. With Get-My.link you can attach these freely as a OneDrive link with a thumbnail image. Also, when you copy an image into Obsidian, the image will get an autogenerated name. With Get-My.link you can upload images to OneDrive with a simple drag & drop, rename them, and get the insertable Markdown code to insert the image in your note all in one step.
+								</li>
+							</ul>
+						</li>
+							
+					</ul>
+					<B>Blogging:</B> 
+					<ul>
+						<li>
+							Customized links are handy when you want to post a picture or document from OneDrive on your blog.
+						</li>
+					</ul>
+					<B>Link sharing:</B>
+					<ul>
+						<li>
+							I often send links to documents on OneDrive to friends via email or Messenger, Hangouts, WhatsApp, etc. Get-My.link will also help when sharing a single file (or multiple files at once).
+						</li>
+					</ul>
+				</span>
+
+				<div class="spacer">&nbsp</div>
+				<legend class="about">How does it work?</legend>
+				<span class="abouttext pure-form-message" >
+					<p>
+						Using Get-My.link is simple.
+					</P>
+						<ol>
+							<li>
+								Open one or more files from OneDrive, or save a file using the OneDrive file picker window or drop an image from your browser on the dashed area and click "OneDrive". As an additional convenience you can edit the name of the image before clicking "OneDrive".
+							</li>
+							<li>
+								Choose the type of link you'd like to create by clicking one of the 4 default options. You can also freely edit these defaults if you want, your changes will be saved in the browser cookies. Don't worry, if you want to get back to the defaults, you can always click Reset, the currently active link will return to default. Check the list of Available Value under the link editor for various fields you can include in your custom link.<BR>
+								Note that not all type of URLs work the same way. You can only use Thumbnail links for images. Private embed and edit links for images will take you into OneDrive. Public read links don't work for images, use Thumbnail.L.Public instead. Some files (e.g. Excel Workbooks) do not receive a thumbnail from OneDrive. Embed links work well with HTML iFrames in case of presentations and documents, but don't work with images. Embed links take you to a full browser window view of documents in OneDrive, while the private edit link takes you into OneDrive opening the document for edit in the appropriate Office Web App. 
+							</li>
+							<li>
+								Links may take a few seconds to generate. Once ready, click "Copy Result" to place the link (or links in case you selected multiple files) on the clipboard. If you change the link format you can simply click "Udate Links" to re-generate the links for the previously opened files.
+							</li>
+						</ol>
+				</span>
+
+				<div class="spacer">&nbsp</div>
+				<legend class="about">What about OneDrive?</legend>
+				<span class="abouttext pure-form-message" >
+					<p>
+						OneDrive offers some default link generation capabilities. However, getting a link that looks good when embedded, or getting access to the full file-path of your file can be cumbersome or downright impossible. Getting links for multiple files at the same time is also not possible in OneDrive by default.
+					</p>
+				</span>
+
+				<div class="spacer">&nbsp</div>
+				<legend class="about">Is Get-My.link safe?</legend>
+				<span class="abouttext pure-form-message" >
+					<p>
+						Get-My.link is safe. The app uses the standard OneDrive file picker offered by Microsoft. The application does not receive or store any of your information on the Get-My.link server, all the communication regarding your files are directly between Microsoft and your browser. The application also does not store any personal information, except for the cookies saved in your browser to allow retention of your customized links.
+					</p>
+				</span>
+
+				<div class="spacer">&nbsp</div>
+				<A name="privacy" id="privacy">
+					<legend class="about">What is your privacy policy?</legend>
+				</A>
+				<span class="abouttext pure-form-message" >
+					<p>
+						Get-My.link does not store any personal information remotely. The only information stored in your browser cookies are the customized links and cookies managed by Google Analytics.
+					</p>
+				</span>
+
+				<div class="spacer">&nbsp</div>
+				<A name="tos" id="tos">
+					<legend class="about">What is your Terms of Service?</legend>
+				</A>
+				<span class="abouttext pure-form-message" >
+					<p>
+						Get-My.link is a hobby project, a simple utility function I created for myself and use as a productivity tool on a daily basis. Get-My.link is shared as-is. While I've done my outmost to ensure the website and the 3rd party components used are safe, by using Get-My.link you acknowledge and accept all risks associated with using this service.  
+					</p>
+					<p>
+						Get-My.link may contain links to third-party web sites or services that are not owned or controlled by Get-My.link. Get-My.link has no control over, and assumes no responsibility for the content, privacy policies, or practices of any third party web sites or services. 
+					</p>
+					<p>
+						By using Get-My.link you acknowledge and accept that I shall not be responsible or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with the use of or reliance on Get-My.link and any 3rd party content, goods or services available on or through any 3rd party web sites or services accessible via Get-My.link.
+					</p>				
+				</span>
+
+				<div class="spacer">&nbsp</div>
+				<A name="knowissues" id="knownissues">
+					<legend class="about">Known issues</legend>
+				</A>
+				<span class="abouttext pure-form-message" >
+					<p>
+						<B>OneDrive file picker issue on Android</B>
+					</p>
+					<ul>
+						<li>
+							<B>Problem:</B> When I click "OneDrive" the OneDrive native app opens up. I can't select a file and can't get back to Get-My.link. In short, the whole thing does not work.
+						</li>
+						<li>
+							<B>Solution:</B> This is due to how Android intercepts URIs redirecting to the application and also the URL used by the Microsoft file picker component. (<A href="https://github.com/OneDrive/onedrive-api-docs/issues/836">read more here</A>). <B>On your device: go to Settings / Apps / OneDrive / Set as Default (or Open as Default) and click clear defaults. Reload Get-My.link and click OneDrive. When prompted click always open in your browser. </B>
+						</li>
+					</ul>
+				</span>
+
+
+				<div class="spacer">&nbsp</div>
+				<legend class="about">Why did you create Get-My.link?</legend>
+				<span class="abouttext pure-form-message" >
+					<p>
+						I created Get-My.link for my own personal use, then decided to share it more widely. Maybe someone else will find it helpful as well. I store documents, pictures, ebooks, presentations, etc. on OneDrive and use Get-My.link to reference them in the personal notes I maintain in <A href="https://thebrain.com/">TheBrain</A> and sometimes in other apps. I prefer to store the full file-path information of my files in my notes, because I can use the file path to locate the synchronized copy of the file on my PC, should I lose access to OneDrive for any reason and need a fallback solution to find my information. I prefer storing documents on OneDrive and embedding them in my notes using links, as with this approach I am able to edit embedded files even from my mobile devices.
+					</p>
+					<p>
+						I created a short course on Udemy about my journaling practice using TheBrain. If you are interested, check out the <A href="https://www.udemy.com/course/getting-organized/?couponCode=GETMYLINKPROMO">Getting Organized</A> course here.
+					</p>
+				</span>
+				
+				<div class="spacer">&nbsp</div>
+				<legend class="about">Where can I contact you?</legend>
+				<span class="abouttext pure-form-message" >
+					Should you have questions, comments, ideas, you can reach me at <A href="mailto:info@get-my.link">info@get-my.link</A>. I would love to hear what you think about the app, how you use it, and what additional features you'd think would make a great addition.
+				</span>                				
+				
+            </form>
+
+        </div>
+        <div class="pure-u-1 pure-u-md-1-4">
+		</div>
+    </div>
+</div>
+    <div id="clipboardDiv" style="all: initial; background: initial; font-size: 12pt; border: 0; padding: 0; margin: 0; position: fixed; right: -9999px; top: 9999px; opacity: 0; pointer-events: none; z-index: -1;" readonly tabindex="0">
+        No link on the clipboard. Need to select a file first using the "Open OneDrive" button!
+    </div>
+
+</body>
+<script type="text/javascript">
+	if (location.protocol == 'http:') {
+		location.replace(`https:${location.href.substring(location.protocol.length)}`);
+	}
+	
+	var ua = window.navigator.userAgent;
+	var msie = ua.indexOf("MSIE ");
+
+	if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))  // If Internet Explorer, return version number
+		window.location.replace('https://get-my.link/IE.html');
+	
+	
+	var isAndroid = ua.toLowerCase().indexOf("android") > -1; //&& ua.indexOf("mobile");
+	if(isAndroid) {
+		$('span#AndroidMessage').css('display','block');	
+	}
+	
+    $('form#preset').submit(false);
+
+	//initiate presets
+    var active_preset;
+    const default_presets = {
+        value: [
+            { 
+                title: encodeJSON("HTML thumbnail and filename with public read-only link"),
+                preset: encodeJSON("<IMG SRC='thumbnail.M.public'><BR><A HREF='file.url.public.read' TARGET='_blank'>file.name</A><BR>")
+            },
+			{ 
+                title: encodeJSON("Simple private link"),
+                preset: encodeJSON("file.url.private.embed")
+            },
+            { 
+                title: encodeJSON("Markdown thumbnail and private edit link including file-path - for Roam, Obsidian, TheBrain"),
+                preset: encodeJSON("![](thumbnail.m.public)<BR>[folder.path](folder.url.private)/[file.name](file.url.private.edit)<BR>")
+            },
+			{ 
+                title: encodeJSON("TiddlyWiki thumbnail and private embed link to file"),
+                preset: encodeJSON("[img[thumbnail.m.public]]<BR><BR>[ext[file.name|file.url.private.embed]]<BR><BR>")
+            }
+            
+        ]
+    };
+	
+    const roam_presets = {
+        value: [
+            { 
+                title: encodeJSON("Private thumbnail & full-path filename link - Roam"),
+                preset: encodeJSON("![](thumbnail.m.public)<BR>[folder.path](folder.url.private)/[file.name](file.url.private.edit)<BR>")
+            },
+			{ 
+                title: encodeJSON("Private filename link - Roam"),
+                preset: encodeJSON("[file.name](file.url.private.embed)<BR>")
+            },
+            { 
+                title: encodeJSON("Private iframe - Roam"),
+                preset: encodeJSON("{{iframe: file.url.private.embed}}<BR>")
+            },
+			{ 
+                title: encodeJSON("Public thumbnail & filename link - Roam"),
+                preset: encodeJSON("![](thumbnail.m.public)<BR>[file.name](file.url.public.read)<BR>")
+            }
+            
+        ]
+    };
+	
+	var presetgroup = 'default';
+    var presets = {
+        value: [
+            { 
+                title: default_presets.value[0].title,
+                preset: default_presets.value[0].preset
+            },
+            { 
+                title: default_presets.value[1].title,
+                preset: default_presets.value[1].preset
+            },
+            { 
+                title: default_presets.value[2].title,
+                preset: default_presets.value[2].preset
+            },
+			{ 
+                title: default_presets.value[3].title,
+                preset: default_presets.value[3].preset
+            }
+        ]
+    };
+	
+	function defaultPreset() {
+		for (i=0;i<4;i++) {
+            presets.value[i].title = default_presets.value[i].title;
+            presets.value[i].preset = default_presets.value[i].preset;
+			$('button#preset'+i).html(decodeJSON(presets.value[i].title));
+			$('button#preset'+i).prop('title',decodeJSON(presets.value[i].title));
+		}
+		
+        $('input#presetName').val(decodeJSON(presets.value[active_preset].title));
+		setEditorVal(presets.value[active_preset].preset);
+		presetgroup = 'default';
+	}
+	
+	function roamPreset() {
+		for (i=0;i<4;i++) {
+            presets.value[i].title = roam_presets.value[i].title;
+            presets.value[i].preset = roam_presets.value[i].preset;
+			$('button#preset'+i).html(decodeJSON(presets.value[i].title));
+			$('button#preset'+i).prop('title',decodeJSON(presets.value[i].title));
+		}
+		
+        $('input#presetName').val(decodeJSON(presets.value[active_preset].title));
+		setEditorVal(presets.value[active_preset].preset);
+		presetgroup = 'roam';
+	}
+	
+
+	
+	//Initiate codejar
+	const highlight = editor => {
+		var code = htmlEncode(editor.textContent);
+		code = code.replace(/folder.url.private/gi, '<span class="code">folder.url.private</span>');
+		code = code.replace(/folder.path/gi, '<span class="code">folder.path</span>');
+		code = code.replace(/file.url.private.embed/gi, '<span class="code">file.url.private.embed</span>');
+		code = code.replace(/file.url.private.edit/gi, '<span class="code">file.url.private.edit</span>');
+		code = code.replace(/file.url.public.read/gi, '<span class="code">file.url.public.read</span>');
+		code = code.replace(/file.name/gi, '<span class="code">file.name</span>');
+		code = code.replace(/thumbnail.l.public/gi, '<span class="code">thumbnail.l.public</span>');
+		code = code.replace(/thumbnail.m.public/gi, '<span class="code">thumbnail.m.public</span>');
+		code = code.replace(/thumbnail.s.public/gi, '<span class="code">thumbnail.s.public</span>');
+		editor.innerHTML = code;
+	}
+	let jar = CodeJar(document.querySelector('.editor'), highlight); 
+
+
+	//Print resulting links at the bottom of the page
+	var fileFields = [];
+	
+	function updateLinks() {
+		if (fileFields.length > 0) {
+			$('legend#message').html('<span class="stephighlight">3.</span> Here are your links');
+			$('p#result').html('');
+			$('div#clipboardDiv').text('');
+			for (i=0;i<fileFields.length;i++) {
+				showResult(fileFields[i]);
+			}
+		} else alert ('There appear to be no files selected. If you have selected a file, and you are still receiving this message, then I probably messed up in my code. Please wait few seconds and click the button again. If that doesn\'t help, then select the files again above.');
+	}
+	
+	function showResult(fields) {
+		location.hash = 'res';
+		l = getEditorVal();
+		if ((l.toLowerCase().indexOf('file.url.public.read') != -1) || (l.toLowerCase().indexOf('thumbnail.') != -1)) 
+			$('table#warning').css('display','block');
+		else $('table#warning').css('display','none');
+		
+        l = l.replace(/folder.url.private/gi, fields.folder_url_private);
+        l = l.replace(/folder.path/gi, fields.folder_path);       
+        l = l.replace(/file.url.private.embed/gi, fields.file_url_private_embed);
+		l = l.replace(/file.url.private.edit/gi, fields.file_url_private_edit);
+        l = l.replace(/file.url.public.read/gi, fields.file_url_public);
+        l = l.replace(/file.name/gi, fields.file_name);
+        l = l.replace(/thumbnail.l.public/gi,fields.thumbnail_large);
+        l = l.replace(/thumbnail.m.public/gi,fields.thumbnail_medium);
+        l = l.replace(/thumbnail.s.public/gi,fields.thumbnail_small);
+		l = decodeJSON(l);
+
+
+		if ((l.indexOf('<<') != -1) && (l.indexOf('>>') != -1)) { //tiddlywiki macro
+			t = $('div#clipboardDiv').text();
+			$('div#clipboardDiv').text(t+l+' ');
+		} else {
+			if ((l.indexOf('<') != -1) && (l.indexOf('[') == -1)) {
+				$('p#result').append(l); 		
+			}  
+			$('div#clipboardDiv').append(l + ' ');
+		}
+		$('p#result').append('<BR><textarea rows=5 class="pure-input-1-1" style="font-size: 75%;">'+l+'</textarea><BR>');
+		$('div#copyresult').css('display','block');		
+	}
+	
+	function set_fileFields(value, itemdata,embeddata,thumbdata) {
+		$('legend#message').html('<span class="stephighlight">3.</span> Here are your links');
+		var fields = {
+			folder_url_private: encodeURI('https://onedrive.live.com/?id='+ itemdata.parentReference.id),
+			folder_path: decodeURI(itemdata.parentReference.path).replace(/\/drive\/root:/gi, ''),
+			file_url_private_embed: (typeof itemdata.image === 'undefined') ?
+				encodeURI('https://onedrive.live.com/embed?resid='+value.id+'&em=2') : itemdata.webUrl,
+			file_url_private_edit: itemdata.webUrl,
+			file_name: itemdata.name,
+			file_url_public: (embeddata != '') ? embeddata.link.webUrl : '',
+			thumbnail_large: (thumbdata.value.length != 0) ? thumbdata.value[0].large.url : '',
+			thumbnail_medium: (thumbdata.value.length != 0) ? thumbdata.value[0].medium.url : '',
+			thumbnail_small: (thumbdata.value.length != 0) ? thumbdata.value[0].small.url : ''
+		};
+		
+		fileFields.push(fields);
+		showResult(fields);
+		$('div#createlinkbutton').css('display','block');
+	}
+
+
+	//Manage cookies
+    function saveToCookie() {
+        var expiration = new Date();
+        expiration.setTime(expiration.getTime() + 3600 * 1000);
+        var data = JSON.stringify(presets);
+        var cookie = "onedrivelink=" + data +"; path=/; expires=" + expiration.toUTCString();
+
+//        if (document.location.protocol.toLowerCase() == "https:") {
+        cookie = cookie + ";secure";
+//        }
+        document.cookie = cookie;
+			
+    }
+
+    function loadFromCookie(name) {
+        var cookies = document.cookie;
+        var start = cookies.indexOf(name);
+        if (start >= 0) {
+            start += name.length;
+            var end = cookies.indexOf(';', start);
+            if (end < 0) {
+                end = cookies.length;
+            }
+            else {
+                postCookie = cookies.substring(end);
+            }
+
+            var value = cookies.substring(start, end);
+            return JSON.parse(value);
+        }
+        return "";
+    }
+	
+	
+	//Manage presets
+    function saveCurrentEditToPreset() {
+        presets.value[active_preset].title = encodeJSON($('input#presetName').val());
+        presets.value[active_preset].preset = getEditorVal() //jar.toString(); //$('textarea#linkformat').val();
+		$('button#preset'+active_preset).html(decodeJSON(presets.value[active_preset].title));
+		$('button#preset'+active_preset).prop('title',decodeJSON(presets.value[active_preset].title));
+    }
+
+    function switch_preset(i) {
+        saveCurrentEditToPreset();
+        saveToCookie();
+        $('input#presetName').val(decodeJSON(presets.value[i].title));
+        setEditorVal(presets.value[i].preset);
+		$('button#preset'+active_preset).removeAttr('style');
+		darken('button#preset'+i);
+        active_preset = i;      
+    }
+   
+    function reset_preset() {
+		switch (presetgroup) {
+			case 'roam':
+				presets.value[active_preset].title = roam_presets.value[active_preset].title;
+				presets.value[active_preset].preset = roam_presets.value[active_preset].preset;			
+				break;
+			default:
+				presets.value[active_preset].title = default_presets.value[active_preset].title;
+				presets.value[active_preset].preset = default_presets.value[active_preset].preset;
+
+		}
+        $('input#presetName').val(decodeJSON(presets.value[active_preset].title));
+		setEditorVal(presets.value[active_preset].preset);
+		$('button#preset'+active_preset).html(decodeJSON(presets.value[active_preset].title));
+		$('button#preset'+active_preset).prop('title',decodeJSON(presets.value[active_preset].title));		
+    }
+
+
+	//Support functions to manage CliboardJS
+    var clipboard = new ClipboardJS('.btn');
+    clipboard.on('success', function(e) {
+        //console.log(e);
+    });
+
+    clipboard.on('error', function(e) {
+        console.log(e);
+    });
+
+
+	//Support functions to read and write the preset editor
+	function getEditorVal() {
+		return encodeJSON(jar.toString());
+	}
+	
+	function setEditorVal(value) {
+		jar.updateCode(decodeJSON(value));
+	}
+
+
+	//drag event handlers
+	
+	function acceptdrag(dt) {
+		if (dt.items.length > 0) {
+/*			if ((dt.items[0].kind == 'file') && (dt.items.length == 1)) //prevent accepting multiple files
+				return true;*/
+			if ((dt.items[0].kind == 'string') && (dt.items.length == 3) ) //could be web image
+				return true;				
+		}
+		return false;
+	}
+	
+	function fdragenter(event) {
+		var dt = event.dataTransfer;
+		//console.log(dt.items);
+		if (acceptdrag(dt)) 
+			$('div#dropContainer').addClass('dropHighlight'); 
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
+	function fdragover(event) {
+		var dt = event.dataTransfer;
+		if(acceptdrag(dt)) {
+			$('div#dropContainer').addClass('dropHighlight'); 
+			event.dataTransfer.dropEffect = 'copy';
+		} else event.dataTransfer.dropEffect = 'none';
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
+	function fdragleave(event) {
+		var dt = event.dataTransfer;
+		if (acceptdrag(dt)) 
+			$('div#dropContainer').removeClass('dropHighlight'); 
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	var imgURL = '';
+	var uploadType = '';
+	
+	function fdrop(event) {
+		uploadType = '';
+		event.preventDefault();
+		event.stopPropagation();
+		$('div#dropContainer').removeClass('dropHighlight'); 
+		var dt = event.dataTransfer;
+		if (acceptdrag(dt)) {
+			if (dt.items[0].kind == 'string') {
+				if (dt.getData('text/html') != '') {				
+					var droppedHTML = dt.getData('text/html');
+					var dropContext = $('<div>').append(droppedHTML);
+					imgURL = $(dropContext).find('img').attr('src');	
+					fname = imgURL.split('/').pop().split('?')[0];
+					if (fname.split('.').pop() == 'webp') 
+						alert('You may upload this file to OneDrive, however unfortunately OneDrive does not support the .webp format. Thumbnails will not work.');
+					$('input#uploadfilename').val(fname);
+					uploadType = 'url';
+					console.log(imgURL);
+					$('div#dropContainer').html('<IMG id="droppedimage" src="'+imgURL+'" style="max-height: 150pt;"/>');
+					return true;
+				}
+			} 
+		}
+	}
+	
+	function ffilechange(event) {
+		$('input#uploadfilename').val(event.target.files[0].name);
+	}
+	
+	function fclick(event) {
+		$('input#fileUploadControl').trigger('click');
+	}
+
+
+	//Initiate page. Load presets from cookie
+    function pageload(){
+        active_preset = 0;
+        obj = loadFromCookie('onedrivelink=');
+        if (obj!='') {
+            if (typeof obj.value !== 'undefined') {
+                for (i=0;i<4;i++) {
+                    presets.value[i].title = obj.value[i].title;
+                    presets.value[i].preset = obj.value[i].preset;
+					$('button#preset'+i).html(decodeJSON(presets.value[i].title));
+					$('button#preset'+i).prop('title',decodeJSON(presets.value[i].title));
+                }
+            }
+        }
+		else 
+			for (i=0;i<4;i++) {
+				$('button#preset'+i).html(decodeJSON(presets.value[i].title));
+				$('button#preset'+i).prop('title',decodeJSON(presets.value[i].title));
+			}
+		
+        $('input#presetName').val(decodeJSON(presets.value[0].title));
+		setEditorVal(presets.value[0].preset);
+		darken('button#preset0')
+    }	
+		
+	//JSON helpers
+	function encodeJSON(s) {
+		s = s.replace(/\:/gi,'%3A');
+		s = s.replace(/\;/gi,'%3B');
+		s = s.replace(/\"/gi,'%22');
+		return encodeURI(s)
+	}
+	
+	function decodeJSON(s) {
+		s = decodeURI(s);
+		s = s.replace(/\%3A/gi,':');
+		s = s.replace(/\%3B/gi,';');
+		s = s.replace(/\%22/gi,'"');
+		return s;
+	
+	}
+	
+	//Other helpers
+	function errorMessage(err) {
+		$('p#result').append('I am very sorry, I messed up. I ran into an error. :( <br>');
+		$('p#result').append(err);
+	}
+	
+	function launchOneDrive() {
+		$('p#result').html('');
+		$('div#clipboardDiv').text('');
+		$('div#createlinkbutton').css('display','none');
+		saveCurrentEditToPreset();
+		saveToCookie();
+		fileFields = [];
+		if(uploadType!='') {
+			$('div#dropContainer').html('You can also drop an image from the web here.');
+			launchSaveToOneDrive(uploadType,imgURL);
+			uploadType = '';
+			imgURL = '';
+			$('input#uploadfilename').val('');
+			
+		} else 	launchOneDrivePicker();
+	}
+	
+	function darken(btn) {		
+		$(btn).css('box-shadow', '0px 0px 10px #303030 inset');
+	}
+	
+	
+</script>
+</html>
