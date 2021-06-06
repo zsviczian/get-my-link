@@ -8,7 +8,7 @@ function launchOneDrivePicker(){
 		viewType: 'all',
 		openInNewWindow: true,
 		advanced: {
-			redirectUri: 'https://get-my.link/redirect.html',
+			redirectUri: 'https://www.get-my.link/redirect.html',
 			scopes: 'Files.ReadWrite'
 		},
 		success: function(response) {
@@ -39,7 +39,7 @@ function launchSaveToOneDrive(type, url) {
 		openInNewWindow: true,
 		nameConflictBehavior: 'rename', //fail, replace, fail
 		advanced: {
-			redirectUri: 'https://get-my.link/redirect.html',
+			redirectUri: 'https://www.get-my.link/redirect.html',
 			scopes: 'Files.ReadWrite'
 		},
 		success: function(response) { 
